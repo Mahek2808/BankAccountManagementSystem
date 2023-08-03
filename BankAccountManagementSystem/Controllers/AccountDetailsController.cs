@@ -39,7 +39,7 @@ namespace BankAccountManagementSystem.Controllers
         }
 
         [HttpGet("GetBankAccountWithTransactions/{bankAccountId}")]
-        public async Task<IActionResult> GetBankAccountWithTransactions(Guid bankAccountId)
+        public async Task<IActionResult> GetBankAccountWithTransactions<T>(T bankAccountId)
         {
             try
             {

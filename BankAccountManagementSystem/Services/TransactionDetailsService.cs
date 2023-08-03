@@ -31,26 +31,24 @@ namespace BankAccountManagementSystem.Services
             }
             catch (Exception ex)
             {
-                ex.Source = "Error while getting Transaction Details";
+                return null;
             }
-            
         }
 
-        public async Task<BankTransaction> GetBankAccountWithTransactions(Guid transactionId)
+        public async Task<BankTransaction> GetBankAccountWithTransactions<T>(T transactionId)
         {
             try
             {
                 var transactionById = await _context.BankTransactionDetails
                .Include(x => x.BankAccount) // Include the transactions for the bank account
-               .FirstOrDefaultAsync(account => account.TransactionId == transactionId);
+               .FirstOrDefaultAsync(account => account.TransactionId.Equals(transactionId));
 
                 return transactionById;
             }
             catch (Exception ex)
             {
-                ex.Source = "Error while getting Transaction details by BankAccount Id";
+               return null;
             }
-           
         }
 
         public async Task CreateDummyDataForTransaction(List<BankAccount> bankAccounts)

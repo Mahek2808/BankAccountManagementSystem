@@ -6,6 +6,6 @@ namespace BankAccountManagementSystem.Interface
     {
         Task CreateDummyDataForTransaction(List<BankAccount> bankAccounts);
         Task<List<BankTransaction>> GetAllTransaction();
-        Task<BankTransaction> GetBankAccountWithTransactions(Guid transactionId);
+        Task<BankTransaction> GetBankAccountWithTransactions<T>(T transactionId);
     }
 }
