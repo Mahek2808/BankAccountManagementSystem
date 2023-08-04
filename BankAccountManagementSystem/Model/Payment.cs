@@ -4,11 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BankAccountManagementSystem.Model
 {
-    public class Payment
+    public class Payment : BaseModelName
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid PaymentId { get; set; }
-        public PaymentType NameOfPaymentType { get; set; }
+        public ICollection<BankTransaction> BankTransactions { get; set; }
     }
 }

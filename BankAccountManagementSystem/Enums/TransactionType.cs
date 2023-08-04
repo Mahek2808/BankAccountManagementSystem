@@ -2,7 +2,7 @@
 {
     public enum TransactionType
     {
-        TransactionTypeCredit = 1,
-        TransactionTypeDebit = 2
+        Credit = 1,
+        Debit = 2
     }
 }

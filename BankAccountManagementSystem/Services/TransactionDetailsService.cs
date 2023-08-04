@@ -1,95 +1,89 @@
-﻿using BankAccountManagementSystem.DBContext;
+﻿using AutoMapper;
+using BankAccountManagementSystem.DBContext;
 using BankAccountManagementSystem.Enum;
-using BankAccountManagementSystem.Interface;
+using BankAccountManagementSystem.Interface.IRepository;
+using BankAccountManagementSystem.Interface.IService;
 using BankAccountManagementSystem.Model;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
-using System;
-using System.ComponentModel;
+using BankAccountManagementSystem.ViewModel;
 using System.Transactions;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace BankAccountManagementSystem.Services
 {
-    public class TransactionDetailsService : ITransaction
+    public class TransactionDetailsService : ITransactionService
     {
-        public readonly ContextClass _context;
-        public readonly IConfiguration configuration;
-        public TransactionDetailsService(ContextClass context,IConfiguration iConfig)
+        private readonly ITransactionRepository _bankTransactionRepository;
+        private readonly IMapper _mapper;
+        private readonly IConfiguration _configuration;
+        private readonly ContextClass _contextClass;
+
+        public TransactionDetailsService(ITransactionRepository transactionRepository, IMapper mapper, IConfiguration configuration, ContextClass contextClass)
         {
-            _context = context;
-            configuration = iConfig;
+            _bankTransactionRepository = transactionRepository;
+            _mapper = mapper;
+            _configuration = configuration;
+            _contextClass = contextClass;
         }
 
-        public async Task<List<BankTransaction>> GetAllTransaction()
+        public async Task<List<BankTransactionResponse>> GetBankTransactions()
+        {
+            var bankTransactions = await _bankTransactionRepository.GetBankTransactions();
+            return _mapper.Map<List<BankTransactionResponse>>(bankTransactions);
+        }
+
+        public async Task<BankTransactionResponse> GetBankTransactionById(Guid id)
         {
             try
             {
-                var transRecord = _context.BankTransactionDetails.ToList();
-                return transRecord;
+                var bankTransaction = await _bankTransactionRepository.GetBankTransactionById(id);
+                return _mapper.Map<BankTransactionResponse>(bankTransaction);
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
-                return null;
+                throw;
             }
+           
         }
 
-        public async Task<BankTransaction> GetBankAccountWithTransactions<T>(T transactionId)
+        public async Task<List<BankTransactionResponse>> CreateBankTransaction(List<BankAccountResponse> bankAccounts)
         {
+            var bankTransactionList = new List<BankTransactionResponse>();
+            var transactions = new List<BankTransaction>();
             try
             {
-                var transactionById = await _context.BankTransactionDetails
-               .Include(x => x.BankAccount) // Include the transactions for the bank account
-               .FirstOrDefaultAsync(account => account.TransactionId.Equals(transactionId));
 
-                return transactionById;
-            }
-            catch (Exception ex)
-            {
-               return null;
-            }
-        }
-
-        public async Task CreateDummyDataForTransaction(List<BankAccount> bankAccounts)
-        {
-            try
-            {
                 foreach (var bankAccount in bankAccounts)
                 {
                     var random = new Random();
                     decimal CreditAmount = 0;
                     decimal DebitAmount = 0;
-                    string DBTransactionConn = configuration.GetValue<string>("DummyRecord:NumberOfBankTransactions");
-                    var transactions = new List<BankTransaction>();
+                    string DBTransactionConn = _configuration.GetValue<string>("DummyRecord:NumberOfBankTransactions");
                     for (int j = 0; j < int.Parse(DBTransactionConn); j++)
                     {
-                        var randomPaymentMethod = _context.PaymentDetails.OrderBy(x => Guid.NewGuid()).First();
+                        var randomPaymentMethod = _contextClass.PaymentDetails.OrderBy(x => Guid.NewGuid()).First();
                         var randomCategoryOption = Enum.CatagoryOptionsForBankAccount.GetValues(typeof(CatagoryOptionsForBankAccount)).Cast<CatagoryOptionsForBankAccount>().OrderBy(x => random.Next()).First();
                         var amount = (decimal)random.NextDouble() * 1000; // Random amount up to 1000
-                        var transactionType = random.Next(0, 2) == 0 ? TransactionType.TransactionTypeCredit : TransactionType.TransactionTypeDebit;
+                        var transactionType = random.Next(0, 2) == 0 ? TransactionType.Credit : TransactionType.Debit;
 
                         var transaction = new BankTransaction
                         {
-                            TransactionId = Guid.NewGuid(),
-                            FirstNameOfTransactionPerson = bankAccount.FirstName,
-                            MiddleNameOfTransactionPerson = bankAccount.MiddleName,
-                            LastNameOfTransactionPerson = bankAccount.LastName,
-                            TypeOfTransaction = random.Next(0, 2) == 0 ? TransactionType.TransactionTypeCredit : TransactionType.TransactionTypeDebit,
+                            Id = Guid.NewGuid(),
+                            FirstName = bankAccount.FirstName,
+                            MiddleName = bankAccount.MiddleName,
+                            LastName = bankAccount.LastName,
+                            TypeOfTransaction = random.Next(0, 2) == 0 ? TransactionType.Credit : TransactionType.Debit,
                             CatagoryOptions = randomCategoryOption,
                             Amount = amount,
                             DateOfTransaction = bankAccount.AccountOpeningDate.AddDays(random.Next(1, 365)), // Random date after the opening date
-                            PaymentMethod = randomPaymentMethod,
-                            BankAccount = bankAccount
+                            Payment = randomPaymentMethod,
+                            BankAccount_Id = bankAccount.Id
                         };
 
-                        if (transaction.TypeOfTransaction == TransactionType.TransactionTypeCredit)
+                        if (transaction.TypeOfTransaction == TransactionType.Credit)
                         {
                             CreditAmount += transaction.Amount; //(decimal)random.NextDouble() * 1000; // Random amount up to 1000
                         }
                         else if (transaction.Amount < bankAccount.TotalAmountOfBalance)
                         {
-                            // Limit the debit amount to the current balance or 100 Rs, whichever is lower.
                             var debitAmount = Math.Min(transaction.Amount, 50);
                             DebitAmount -= debitAmount;
                         }
@@ -101,33 +95,52 @@ namespace BankAccountManagementSystem.Services
 
                         transactions.Add(transaction);
                         bankAccount.TotalAmountOfBalance += (int)(Math.Abs(CreditAmount) - Math.Abs(DebitAmount));
-                        _context.BankTransactionDetails.Add(transaction);
+                        _contextClass.BankTransactionDetails.Add(transaction);
 
-                        if (randomCategoryOption == CatagoryOptionsForBankAccount.Bank_Intrest || randomCategoryOption == CatagoryOptionsForBankAccount.Bank_Charges)
+                        if (randomCategoryOption == CatagoryOptionsForBankAccount.BankIntrest || randomCategoryOption == CatagoryOptionsForBankAccount.BankCharges)
                         {
                             // This is for BankAccountPosting table
-                            var posting = new BankAccountPostingDetails
+                            var posting = new BankAccountPostingDetail
                             {
-                                PostingId = Guid.NewGuid(),
-                                PostingDetails = transaction
+                                Id = Guid.NewGuid(),
+                                BankTransaction_Id = transaction.Id
                             };
-
-                            _context.BankAccountPostingDetails.Add(posting);
+                            _contextClass.BankAccountPostingDetails.Add(posting);
                         }
                     }
                     bankAccount.TotalAmountOfBalance = (int)(Math.Abs(CreditAmount) - Math.Abs(DebitAmount));
-                    await _context.SaveChangesAsync();
                 }
-
-                await _context.SaveChangesAsync();
+                await _bankTransactionRepository.CreateBankTransaction(transactions);
+                return _mapper.Map<List<BankTransactionResponse>>(transactions);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                ex.Source= "Error occuring while doing Transaction";
+                throw;
             }
-            
         }
 
-    }
+        public async Task UpdateBankTransaction(Guid id, BankTransactionResponse bankTransactionVM)
+        {
+            var existingBankTransaction = await _bankTransactionRepository.GetBankTransactionById(id);
+            if (existingBankTransaction == null)
+            {
+                throw new Exception("Bank transaction not found.");
+            }
+            _mapper.Map(bankTransactionVM, existingBankTransaction);
 
+            await _bankTransactionRepository.UpdateBankTransaction(id, existingBankTransaction);
+        }
+
+        public async Task DeleteBankTransaction(Guid id)
+        {
+            var existingBankTransaction = await _bankTransactionRepository.GetBankTransactionById(id);
+            if (existingBankTransaction == null)
+            {
+                // Handle not found scenario
+                throw new Exception("Bank transaction not found.");
+            }
+
+            await _bankTransactionRepository.DeleteBankTransaction(id);
+        }
+    }
 }

@@ -2,9 +2,9 @@
 {
     public enum CatagoryOptionsForBankAccount
     {
-        Opening_Balance = 1,
-        Bank_Intrest = 2,
-        Bank_Charges = 3,
-        Normal_Transaction= 4
+        OpeningBalance = 1,
+        BankIntrest = 2,
+        BankCharges = 3,
+        NormalTransaction= 4
     }
 }

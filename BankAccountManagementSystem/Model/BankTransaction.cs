@@ -4,16 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BankAccountManagementSystem.Model
 {
-    public class BankTransaction
+    public class BankTransaction : BaseModelUserFullName
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid TransactionId { get; set; }
-        [Required]
-        public string? FirstNameOfTransactionPerson { get; set; }
-        public string MiddleNameOfTransactionPerson { get; set; }
-        [Required]
-        public string? LastNameOfTransactionPerson { get; set; }
         public TransactionType TypeOfTransaction { get; set; }
         public CatagoryOptionsForBankAccount CatagoryOptions { get; set; }
 
@@ -21,10 +13,16 @@ namespace BankAccountManagementSystem.Model
         public decimal Amount { get; set; }
         public DateTime DateOfTransaction { get; set; }
 
-        [ForeignKey("PaymentId")]
-        public Payment PaymentMethod { get; set; }    
+        [ForeignKey("Payment")]
+        [Required]
+        public Guid Payment_Id { get; set; }
+        public Payment Payment { get; set; }
 
-        [ForeignKey("BankAccountId")]
-        public BankAccount BankAccount { get; set; }     
+        [Required]
+        [ForeignKey("BankAccount")]
+        public Guid BankAccount_Id { get; set; }
+        public BankAccount BankAccount { get; set; }
+        public ICollection<BankAccountPostingDetail> BankAccountPostingDetails { get; set; }
+
     }
-}
+}   

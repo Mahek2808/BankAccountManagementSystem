@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BankAccountManagementSystem.Migrations
 {
     [DbContext(typeof(ContextClass))]
-    [Migration("20230727102533_TableChanges")]
-    partial class TableChanges
+    [Migration("20230804044347_final")]
+    partial class final
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,21 +27,34 @@ namespace BankAccountManagementSystem.Migrations
 
             modelBuilder.Entity("BankAccountManagementSystem.Model.AccountType", b =>
                 {
-                    b.Property<Guid>("AccountTypeId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("TypeOfAccount")
-                        .HasColumnType("int");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("AccountTypeId");
+                    b.HasKey("Id");
 
                     b.ToTable("AccountTypesDetails");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("026ec876-4526-4122-a00d-afb6cbfeea73"),
+                            Name = "Liability"
+                        },
+                        new
+                        {
+                            Id = new Guid("1b47d3b2-9b44-4ea9-b5e0-d4921499070c"),
+                            Name = "Asset"
+                        });
                 });
 
             modelBuilder.Entity("BankAccountManagementSystem.Model.BankAccount", b =>
                 {
-                    b.Property<Guid>("BankAccountId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
@@ -54,7 +67,7 @@ namespace BankAccountManagementSystem.Migrations
                     b.Property<DateTime>("AccountOpeningDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("AccountTypeId")
+                    b.Property<Guid>("AccountType_Id")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("FirstName")
@@ -72,32 +85,32 @@ namespace BankAccountManagementSystem.Migrations
                     b.Property<int>("TotalAmountOfBalance")
                         .HasColumnType("int");
 
-                    b.HasKey("BankAccountId");
+                    b.HasKey("Id");
 
-                    b.HasIndex("AccountTypeId");
+                    b.HasIndex("AccountType_Id");
 
                     b.ToTable("BankAccountsDetails");
                 });
 
-            modelBuilder.Entity("BankAccountManagementSystem.Model.BankAccountPostingDetails", b =>
+            modelBuilder.Entity("BankAccountManagementSystem.Model.BankAccountPostingDetail", b =>
                 {
-                    b.Property<Guid>("PostingId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("PostingDetailsTransactionId")
+                    b.Property<Guid>("BankTransaction_Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("PostingId");
+                    b.HasKey("Id");
 
-                    b.HasIndex("PostingDetailsTransactionId");
+                    b.HasIndex("BankTransaction_Id");
 
                     b.ToTable("BankAccountPostingDetails");
                 });
 
             modelBuilder.Entity("BankAccountManagementSystem.Model.BankTransaction", b =>
                 {
-                    b.Property<Guid>("TransactionId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
@@ -105,7 +118,7 @@ namespace BankAccountManagementSystem.Migrations
                         .HasMaxLength(6)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid>("BankAccountId")
+                    b.Property<Guid>("BankAccount_Id")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("CatagoryOptions")
@@ -114,86 +127,134 @@ namespace BankAccountManagementSystem.Migrations
                     b.Property<DateTime>("DateOfTransaction")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("FirstNameOfTransactionPerson")
+                    b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("LastNameOfTransactionPerson")
+                    b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("MiddleNameOfTransactionPerson")
+                    b.Property<string>("MiddleName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("PaymentId")
+                    b.Property<Guid>("Payment_Id")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("TypeOfTransaction")
                         .HasColumnType("int");
 
-                    b.HasKey("TransactionId");
+                    b.HasKey("Id");
 
-                    b.HasIndex("BankAccountId");
+                    b.HasIndex("BankAccount_Id");
 
-                    b.HasIndex("PaymentId");
+                    b.HasIndex("Payment_Id");
 
                     b.ToTable("BankTransactionDetails");
                 });
 
             modelBuilder.Entity("BankAccountManagementSystem.Model.Payment", b =>
                 {
-                    b.Property<Guid>("PaymentId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("NameOfPaymentType")
-                        .HasColumnType("int");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("PaymentId");
+                    b.HasKey("Id");
 
                     b.ToTable("PaymentDetails");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("e5eed49b-e788-4174-82aa-9dba83138a8d"),
+                            Name = "Cash"
+                        },
+                        new
+                        {
+                            Id = new Guid("963a6c8b-4a7f-4e75-bdeb-3bc9d8be9cef"),
+                            Name = "Cheque"
+                        },
+                        new
+                        {
+                            Id = new Guid("264ecbe9-2c49-40ca-9a7e-630e7999b296"),
+                            Name = "NEFT"
+                        },
+                        new
+                        {
+                            Id = new Guid("85e2e054-5a65-425d-ab26-c34b69b26be6"),
+                            Name = "RTGS"
+                        },
+                        new
+                        {
+                            Id = new Guid("c96abbe3-9cf1-4ec6-ac2d-250bb69ac651"),
+                            Name = "Other"
+                        });
                 });
 
             modelBuilder.Entity("BankAccountManagementSystem.Model.BankAccount", b =>
                 {
                     b.HasOne("BankAccountManagementSystem.Model.AccountType", "AccountType")
-                        .WithMany()
-                        .HasForeignKey("AccountTypeId")
+                        .WithMany("BankAccounts")
+                        .HasForeignKey("AccountType_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("AccountType");
                 });
 
-            modelBuilder.Entity("BankAccountManagementSystem.Model.BankAccountPostingDetails", b =>
+            modelBuilder.Entity("BankAccountManagementSystem.Model.BankAccountPostingDetail", b =>
                 {
-                    b.HasOne("BankAccountManagementSystem.Model.BankTransaction", "PostingDetails")
-                        .WithMany()
-                        .HasForeignKey("PostingDetailsTransactionId")
+                    b.HasOne("BankAccountManagementSystem.Model.BankTransaction", "BankTransaction")
+                        .WithMany("BankAccountPostingDetails")
+                        .HasForeignKey("BankTransaction_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("PostingDetails");
+                    b.Navigation("BankTransaction");
                 });
 
             modelBuilder.Entity("BankAccountManagementSystem.Model.BankTransaction", b =>
                 {
                     b.HasOne("BankAccountManagementSystem.Model.BankAccount", "BankAccount")
-                        .WithMany()
-                        .HasForeignKey("BankAccountId")
+                        .WithMany("BankTransactions")
+                        .HasForeignKey("BankAccount_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BankAccountManagementSystem.Model.Payment", "PaymentMethod")
-                        .WithMany()
-                        .HasForeignKey("PaymentId")
+                    b.HasOne("BankAccountManagementSystem.Model.Payment", "Payment")
+                        .WithMany("BankTransactions")
+                        .HasForeignKey("Payment_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("BankAccount");
 
-                    b.Navigation("PaymentMethod");
+                    b.Navigation("Payment");
+                });
+
+            modelBuilder.Entity("BankAccountManagementSystem.Model.AccountType", b =>
+                {
+                    b.Navigation("BankAccounts");
+                });
+
+            modelBuilder.Entity("BankAccountManagementSystem.Model.BankAccount", b =>
+                {
+                    b.Navigation("BankTransactions");
+                });
+
+            modelBuilder.Entity("BankAccountManagementSystem.Model.BankTransaction", b =>
+                {
+                    b.Navigation("BankAccountPostingDetails");
+                });
+
+            modelBuilder.Entity("BankAccountManagementSystem.Model.Payment", b =>
+                {
+                    b.Navigation("BankTransactions");
                 });
 #pragma warning restore 612, 618
         }
