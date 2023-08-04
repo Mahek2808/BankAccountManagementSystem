@@ -57,19 +57,6 @@ namespace BankAccountManagementSystem.DBContext
                     Name = "Other"
                 }
              );
-            //modelBuilder.Entity<BankTransaction>().HasData(
-            //    new BankTransaction
-            //    {
-            //        Id = Guid.NewGuid(),
-            //        FirstName = "A",
-            //        MiddleName = "B",
-            //        LastName = "C",
-            //        TypeOfTransaction = Enum.TransactionType.TransactionTypeDebit,
-            //        CatagoryOptions = Enum.CatagoryOptionsForBankAccount.Bank_Charges,
-           
-            //        DateOfTransaction = default(DateTime),
-            //    }
-            //    );
         }
     }
 }
