@@ -23,7 +23,10 @@ namespace BankAccountManagementSystem.Extenstions
             services.AddTransient<ITransactionRepository, TransactionRepository>();
             services.AddTransient<IPostingService, TransactionPostingService>();
             services.AddTransient<IPostngRepository, TransactionPostingRepository>();
-
+            services.AddTransient<IAccountTypeRepository, AccountTypeRepository>();
+            services.AddTransient<IAccountTypeService, AccountTypeService>();
+            services.AddTransient<IPaymentRepository, PaymentRepository>();
+            services.AddTransient<IPaymentService, PaymentService>();
         }
     }
 }

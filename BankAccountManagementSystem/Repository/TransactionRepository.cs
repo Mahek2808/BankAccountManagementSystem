@@ -24,6 +24,11 @@ namespace BankAccountManagementSystem.Repository
             return await _ContextClass.BankTransactionDetails.FirstOrDefaultAsync(x => x.Id == id);
         }
 
+        public async Task<BankTransaction> GetBankTransactionByIdAndBankAccount(Guid id, Guid bankAccountId)
+        {
+            return await _ContextClass.BankTransactionDetails.FirstOrDefaultAsync(x => x.Id == id && x.BankAccount_Id == bankAccountId);
+        }
+
         public async Task CreateBankTransaction(List<BankTransaction> bankTransaction)
         {
             var newId = Guid.NewGuid();

@@ -31,8 +31,19 @@ namespace BankAccountManagementSystem.Controllers
             var bankTransaction = await _bankTransactionService.GetBankTransactionById(id);
             if (bankTransaction != null)
             {
-                result = bankTransaction;
-                return Ok(result);
+                return Ok(bankTransaction);
+            }
+            return NotFound();
+        }
+
+        [HttpGet("{bankAccountId}/{id}")]
+        public async Task<ActionResult<BankTransactionResponse>> GetBankTransactionById(Guid id, Guid bankAccountId)
+        {
+            BankTransactionResponse result = new();
+            var bankTransactionByBankAccountId = await _bankTransactionService.GetBankTransactionByIdAndBankAccount(id, bankAccountId);
+            if (bankTransactionByBankAccountId != null)
+            {
+                return Ok(bankTransactionByBankAccountId);
             }
             return NotFound();
         }

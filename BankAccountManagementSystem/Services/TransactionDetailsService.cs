@@ -5,7 +5,6 @@ using BankAccountManagementSystem.Interface.IRepository;
 using BankAccountManagementSystem.Interface.IService;
 using BankAccountManagementSystem.Model;
 using BankAccountManagementSystem.ViewModel;
-using System.Transactions;
 
 namespace BankAccountManagementSystem.Services
 {
@@ -32,16 +31,19 @@ namespace BankAccountManagementSystem.Services
 
         public async Task<BankTransactionResponse> GetBankTransactionById(Guid id)
         {
-            try
+            var bankTransaction = await _bankTransactionRepository.GetBankTransactionById(id);
+            return _mapper.Map<BankTransactionResponse>(bankTransaction);
+        }
+
+        public async Task<BankTransactionResponse> GetBankTransactionByIdAndBankAccount(Guid id, Guid bankAccountId)
+        {
+            var bankTransactionByBankId = await _bankTransactionRepository.GetBankTransactionByIdAndBankAccount(id, bankAccountId);
+            if (bankTransactionByBankId != null)
             {
-                var bankTransaction = await _bankTransactionRepository.GetBankTransactionById(id);
-                return _mapper.Map<BankTransactionResponse>(bankTransaction);
+                var bankTransactionByAccountId = _mapper.Map<BankTransactionResponse>(bankTransactionByBankId);
+                return bankTransactionByAccountId;
             }
-            catch(Exception ex)
-            {
-                throw;
-            }
-           
+            return null;
         }
 
         public async Task<List<BankTransactionResponse>> CreateBankTransaction(List<BankAccountResponse> bankAccounts)
@@ -122,25 +124,22 @@ namespace BankAccountManagementSystem.Services
         public async Task UpdateBankTransaction(Guid id, BankTransactionResponse bankTransactionVM)
         {
             var existingBankTransaction = await _bankTransactionRepository.GetBankTransactionById(id);
-            if (existingBankTransaction == null)
+            if (existingBankTransaction != null)
             {
-                throw new Exception("Bank transaction not found.");
+                _mapper.Map(bankTransactionVM, existingBankTransaction);
+                await _bankTransactionRepository.UpdateBankTransaction(id, existingBankTransaction);
             }
-            _mapper.Map(bankTransactionVM, existingBankTransaction);
-
-            await _bankTransactionRepository.UpdateBankTransaction(id, existingBankTransaction);
+            throw new Exception("Bank transaction not found.");
         }
 
         public async Task DeleteBankTransaction(Guid id)
         {
             var existingBankTransaction = await _bankTransactionRepository.GetBankTransactionById(id);
-            if (existingBankTransaction == null)
+            if (existingBankTransaction != null)
             {
-                // Handle not found scenario
-                throw new Exception("Bank transaction not found.");
+                await _bankTransactionRepository.DeleteBankTransaction(id);
             }
-
-            await _bankTransactionRepository.DeleteBankTransaction(id);
+            throw new Exception("Bank transaction not found.");
         }
     }
 }
